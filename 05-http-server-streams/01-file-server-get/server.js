@@ -25,7 +25,6 @@ server.on('request', (req, res) => {
             res.statusCode = 500;
             res.end('Internal Server Error');
           }
-          res.end('Not found!');
         });
         streamRead.pipe(res);
       }
