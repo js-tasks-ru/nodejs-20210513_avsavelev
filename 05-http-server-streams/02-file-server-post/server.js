@@ -34,6 +34,9 @@ server.on('request', (req, res) => {
         if (error.code === 'EEXIST') {
           res.statusCode = 409;
           res.end('File is alredy exist');
+        } else {
+          res.statusCode = 500;
+          res.end(error.statusCode, error.message);
         }
       });
 
@@ -48,13 +51,23 @@ server.on('request', (req, res) => {
         res.end('It\'s all right');
       });
 
-      limitedStream.on('error', () => {
-        res.statusCode = 413;
-        res.end('Large post request body');
-        destroyWriteStream();
+      limitedStream.on('error', (error) => {
+        if (error.code === 'LIMIT_EXCEEDED') {
+          res.statusCode = 413;
+          res.end('Large post request body');
+          destroyWriteStream();
+        } else {
+          res.statusCode = 500;
+          res.end(error.statusCode, error.message);
+        }
       });
 
       req.on('aborted', destroyWriteStream);
+
+      req.on('error', (error) => {
+        res.statusCode = 500;
+        res.end(error.statusCode, error.message);
+      });
 
       break;
 
