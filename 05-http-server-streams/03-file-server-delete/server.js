@@ -1,6 +1,7 @@
 const url = require('url');
 const http = require('http');
 const path = require('path');
+const fs = require('fs');
 
 const server = new http.Server();
 
@@ -11,6 +12,24 @@ server.on('request', (req, res) => {
 
   switch (req.method) {
     case 'DELETE':
+      if (pathname.includes('/') || pathname.includes('..')) {
+        res.statusCode = 400;
+        return res.end('Nested paths are not allowed');
+      };
+      fs.unlink(filepath, (error) => {
+        if (error) {
+          if (error.code === 'ENOENT') {
+            res.statusCode = 404;
+            res.end();
+          } else {
+            res.statusCode = 500;
+            res.end(error.message);
+          }
+        } else {
+          res.statusCode = 200;
+          res.end('success');
+        }
+      });
 
       break;
 
